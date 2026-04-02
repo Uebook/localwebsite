@@ -75,10 +75,6 @@ export default function LoginPage() {
         });
         const data = await res.json();
         if (!res.ok) {
-          if (data.needs_payment && data.vendorId) {
-             router.push(`/vendor/payment?vid=${data.vendorId}`);
-             return;
-          }
           setError(data.error || 'Vendor login failed. Check your credentials or register first.');
           return;
         }

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Briefcase, CheckCircle, Upload, Image as ImageIcon, FileText, X, MapPin, Search, Loader2, Navigation, Check } from 'lucide-react';
 import Link from 'next/link';
-import { INDIAN_STATES, STATE_CITIES } from '@/lib/locationData';
+// Removed hardcoded INDIAN_STATES and STATE_CITIES imports
 
 export default function VendorRegisterPage() {
   const [step, setStep] = useState(1);
@@ -35,13 +35,22 @@ export default function VendorRegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  const [circles, setCircles] = useState<any[]>([]);
-  const [isLoadingCircles, setIsLoadingCircles] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [feesConfig, setFeesConfig] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'six_monthly' | 'yearly'>('monthly');
+
+  // Dynamic Location States
+  const [dbStates, setDbStates] = useState<string[]>([]);
+  const [dbCities, setDbCities] = useState<string[]>([]);
+  const [dbTowns, setDbTowns] = useState<string[]>([]);
+  const [dbMarkets, setDbMarkets] = useState<string[]>([]);
+
+  const [isLoadingStates, setIsLoadingStates] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+  const [isLoadingTowns, setIsLoadingTowns] = useState(false);
+  const [isLoadingMarkets, setIsLoadingMarkets] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -60,21 +69,6 @@ export default function VendorRegisterPage() {
     };
     fetchCategories();
 
-    const fetchCircles = async () => {
-      try {
-        const res = await fetch('/api/circles');
-        if (res.ok) {
-          const data = await res.json();
-          setCircles(data.circles || []);
-        }
-      } catch (err) {
-        console.error('Failed to fetch circles:', err);
-      } finally {
-        setIsLoadingCircles(false);
-      }
-    };
-    fetchCircles();
-
     const fetchFees = async () => {
       try {
         const res = await fetch('/api/payment-fees/config');
@@ -87,7 +81,85 @@ export default function VendorRegisterPage() {
       }
     };
     fetchFees();
+
+    // Fetch Initial States
+    const fetchStates = async () => {
+      setIsLoadingStates(true);
+      try {
+        const res = await fetch('/api/locations');
+        const data = await res.json();
+        if (data.success) setDbStates(data.data);
+      } catch (err) {
+        console.error('Failed to fetch states:', err);
+      } finally {
+        setIsLoadingStates(false);
+      }
+    };
+    fetchStates();
   }, []);
+
+  // Cascading Fetch for Cities
+  useEffect(() => {
+    if (!formData.state) {
+      setDbCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      setIsLoadingCities(true);
+      try {
+        const res = await fetch(`/api/locations?parentType=state&parentValue=${encodeURIComponent(formData.state)}`);
+        const data = await res.json();
+        if (data.success) setDbCities(data.data);
+      } catch (err) {
+        console.error('Failed to fetch cities:', err);
+      } finally {
+        setIsLoadingCities(false);
+      }
+    };
+    fetchCities();
+  }, [formData.state]);
+
+  // Cascading Fetch for Towns (Circle / Area)
+  useEffect(() => {
+    if (!formData.city) {
+      setDbTowns([]);
+      return;
+    }
+    const fetchTowns = async () => {
+      setIsLoadingTowns(true);
+      try {
+        const res = await fetch(`/api/locations?parentType=city&parentValue=${encodeURIComponent(formData.city)}`);
+        const data = await res.json();
+        if (data.success) setDbTowns(data.data);
+      } catch (err) {
+        console.error('Failed to fetch towns:', err);
+      } finally {
+        setIsLoadingTowns(false);
+      }
+    };
+    fetchTowns();
+  }, [formData.city]);
+
+  // Cascading Fetch for Markets (Specific Market)
+  useEffect(() => {
+    if (!formData.area) {
+      setDbMarkets([]);
+      return;
+    }
+    const fetchMarkets = async () => {
+      setIsLoadingMarkets(true);
+      try {
+        const res = await fetch(`/api/locations?parentType=town&parentValue=${encodeURIComponent(formData.area)}`);
+        const data = await res.json();
+        if (data.success) setDbMarkets(data.data);
+      } catch (err) {
+        console.error('Failed to fetch markets:', err);
+      } finally {
+        setIsLoadingMarkets(false);
+      }
+    };
+    fetchMarkets();
+  }, [formData.area]);
 
   const uploadFile = async (file: File, folder: string) => {
     const formData = new FormData();
@@ -290,12 +362,6 @@ export default function VendorRegisterPage() {
   };
 
   const handleSelectLocation = (loc: any) => {
-    // Try to find a matching circle from the address components
-    const addressStr = loc.display_name.toLowerCase();
-    const matchedCircle = circles.find(c => 
-      addressStr.includes(c.name.toLowerCase())
-    );
-
     setFormData(prev => ({
       ...prev,
       latitude: parseFloat(loc.lat),
@@ -305,7 +371,6 @@ export default function VendorRegisterPage() {
       city: loc.address.city || loc.address.town || loc.address.village || prev.city,
       pincode: loc.address.postcode || prev.pincode,
       area: loc.address.suburb || loc.address.neighbourhood || prev.area,
-      circle: matchedCircle ? matchedCircle.name : prev.circle,
     }));
     setSearchQuery('');
     setSuggestions([]);
@@ -327,10 +392,6 @@ export default function VendorRegisterPage() {
           if (res.ok) {
             const data = await res.json();
             const addr = data.address;
-            // Try to find matching circle
-            const addressStr = data.display_name.toLowerCase();
-            const matchedCircle = circles.find(c => addressStr.includes(c.name.toLowerCase()));
-
             setFormData(prev => ({
               ...prev,
               latitude,
@@ -340,7 +401,6 @@ export default function VendorRegisterPage() {
               city: addr.city || addr.town || addr.village || prev.city,
               pincode: addr.postcode || prev.pincode,
               area: addr.suburb || addr.neighbourhood || prev.area,
-              circle: matchedCircle ? matchedCircle.name : prev.circle,
             }));
           } else {
             setFormData(prev => ({ ...prev, latitude, longitude }));
@@ -661,10 +721,11 @@ export default function VendorRegisterPage() {
                         setFormData(prev => ({ ...prev, state: newState, city: '', circle: '', area: '' }));
                       }}
                       required
+                      disabled={isLoadingStates}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 bg-white"
                     >
-                      <option value="">Select state</option>
-                      {INDIAN_STATES.map(state => (
+                      <option value="">{isLoadingStates ? 'Loading states...' : 'Select state'}</option>
+                      {dbStates.map(state => (
                         <option key={state} value={state}>{state}</option>
                       ))}
                     </select>
@@ -680,11 +741,11 @@ export default function VendorRegisterPage() {
                         setFormData(prev => ({ ...prev, city: newCity, circle: '', area: '' }));
                       }}
                       required
-                      disabled={!formData.state}
+                      disabled={!formData.state || isLoadingCities}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
                     >
-                      <option value="">Select city</option>
-                      {formData.state && STATE_CITIES[formData.state]?.map(city => (
+                      <option value="">{isLoadingCities ? 'Loading cities...' : 'Select city'}</option>
+                      {dbCities.map(city => (
                         <option key={city} value={city}>{city}</option>
                       ))}
                     </select>
@@ -703,16 +764,14 @@ export default function VendorRegisterPage() {
                         setFormData(prev => ({ ...prev, area: newArea, circle: '' }));
                       }}
                       required
-                      disabled={!formData.city || isLoadingCircles}
+                      disabled={!formData.city || isLoadingTowns}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 bg-white disabled:opacity-50"
                     >
-                      <option value="">{isLoadingCircles ? 'Loading...' : 'Select Circle / Area'}</option>
-                      {Array.from(new Set(circles.filter(c => c.city === formData.city).map(c => c.town || c.city))).sort().map(area => (
+                      <option value="">{isLoadingTowns ? 'Loading...' : 'Select Circle / Area'}</option>
+                      {dbTowns.map(area => (
                         <option key={area} value={area}>{area}</option>
                       ))}
-                      {!isLoadingCircles && formData.city && (
-                        <option value="Other">Other / Not Listed</option>
-                      )}
+                      {!isLoadingTowns && formData.city && <option value="Other">Other / Not Listed</option>}
                     </select>
                   </div>
                   <div>
@@ -723,18 +782,14 @@ export default function VendorRegisterPage() {
                       value={formData.circle}
                       onChange={(e) => handleChange('circle', e.target.value)}
                       required
-                      disabled={!formData.area || isLoadingCircles}
+                      disabled={!formData.area || isLoadingMarkets}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 bg-white disabled:opacity-50"
                     >
-                      <option value="">{isLoadingCircles ? 'Loading...' : 'Select Market'}</option>
-                      {circles
-                        .filter(c => c.city === formData.city && (c.town === formData.area || c.city === formData.area))
-                        .map(c => (
-                          <option key={c.id || c.name} value={c.name}>{c.name}</option>
-                        ))}
-                      {!isLoadingCircles && formData.area && (
-                        <option value="Other">Other / Not Listed</option>
-                      )}
+                      <option value="">{isLoadingMarkets ? 'Loading...' : 'Select Market'}</option>
+                      {dbMarkets.map(market => (
+                        <option key={market} value={market}>{market}</option>
+                      ))}
+                      {!isLoadingMarkets && formData.area && <option value="Other">Other / Not Listed</option>}
                     </select>
                   </div>
                 </div>

@@ -33,49 +33,13 @@ export async function POST(request: NextRequest) {
 
         const v = results[0];
         const status = (v.status ?? '').trim();
-        if (status !== 'Active') {
-            if (status === 'Blocked') {
-                return NextResponse.json({
-                    error: 'Your account has been blocked. Please contact support.'
-                }, { status: 403 });
-            }
-            // Pending, Inactive, etc.
+        if (status === 'Blocked') {
             return NextResponse.json({
-                error: 'Your account is pending admin approval or awaiting payment completion.',
-                status,
-                needs_payment: true,
-                vendorId: v.id
+                error: 'Your account has been blocked. Please contact support.'
             }, { status: 403 });
         }
-
-        // --- Subscription Expiry Check for Active Vendors ---
-        if (status === 'Active') {
-            const billingRes = await supabaseRestGet(`/rest/v1/vendor_billing?vendor_id=eq.${v.id}&order=created_at.desc&limit=1`);
-            if (Array.isArray(billingRes) && billingRes.length > 0) {
-                const latestBilling = billingRes[0];
-                const dueDateStr = latestBilling.due_date; // e.g. '2024-04-20'
-                if (dueDateStr) {
-                    const dueDate = new Date(dueDateStr);
-                    const today = new Date();
-                    dueDate.setHours(0, 0, 0, 0);
-                    today.setHours(0, 0, 0, 0);
-
-                    if (dueDate < today) {
-                        return NextResponse.json({
-                            error: 'Your subscription has expired. Please renew to continue.',
-                            needs_payment: true,
-                            vendorId: v.id,
-                        }, { status: 403 });
-                    }
-                }
-            } else {
-                 return NextResponse.json({
-                     error: 'No active subscription found. Please complete your payment.',
-                     needs_payment: true,
-                     vendorId: v.id,
-                 }, { status: 403 });
-            }
-        }
+        
+        // Removed payment and subscription checks per user request to allow direct login.
 
 
         const vendor = {
