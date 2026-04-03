@@ -104,7 +104,8 @@ export default function OfferDetailModal({ offer, onClose }: OfferDetailModalPro
                                           </button>
                                           <button
                                                  onClick={() => {
-                                                        if (offer.business?.id) window.location.href = `/vendor/${offer.business.id}`;
+                                                        const vendorId = offer.vendorId || (offer.vendor_ids && offer.vendor_ids[0]) || offer.business?.id;
+                                                        if (vendorId) window.location.href = `/vendor/${vendorId}`;
                                                         else onClose();
                                                  }}
                                                  className="flex-1 py-4 bg-gradient-to-r from-orange-500 to-primary text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-orange-200 active:scale-95"

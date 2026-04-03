@@ -25,6 +25,7 @@ export default function AIChatWidget() {
     const [context, setContext] = useState<any>({});
     const [options, setOptions] = useState<Option[]>([]);
     const [results, setResults] = useState<any>(null);
+    const [isVisible, setIsVisible] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -154,20 +155,29 @@ export default function AIChatWidget() {
     return (
         <>
             {/* Premium Floating Button */}
-            {!isOpen && (
+            {isVisible && !isOpen && (
+                <div className="fixed bottom-8 right-8 z-50 group">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="fixed bottom-8 right-8 w-16 h-16 bg-slate-900 rounded-[2rem] shadow-2xl hover:shadow-primary/20 transition-all duration-500 flex items-center justify-center group z-50 overflow-hidden"
+                    className="w-16 h-16 bg-slate-900 rounded-[2rem] shadow-2xl hover:shadow-primary/20 transition-all duration-500 flex items-center justify-center overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-primary via-orange-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <Sparkles className="relative w-7 h-7 text-white group-hover:scale-110 transition-transform duration-500" strokeWidth={2.5} />
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-white animate-pulse" />
                 </button>
+                <button 
+                  onClick={() => setIsVisible(false)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all shadow-lg scale-75 hover:scale-100"
+                  title="Hide Assistant"
+                >
+                  <X size={12} strokeWidth={3} />
+                </button>
+                </div>
             )}
 
             {/* Chat Widget Glass Concept */}
             {isOpen && (
-                <div className="fixed bottom-8 right-8 w-[400px] h-[700px] bg-white rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col z-50 border border-slate-100 overflow-hidden reveal">
+                <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 w-[calc(100vw-32px)] sm:w-[400px] h-full max-h-[calc(100vh-32px)] sm:max-h-[700px] bg-white rounded-[2rem] sm:rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] flex flex-col z-[100] border border-slate-100 overflow-hidden reveal">
                     {/* Elegant Header */}
                     <div className="bg-slate-900 px-8 py-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent opacity-50" />

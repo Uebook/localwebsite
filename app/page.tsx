@@ -7,7 +7,7 @@ import Sidebar from '@/components/Sidebar';
 import BusinessCard from '@/components/BusinessCard';
 import CategoryCard from '@/components/CategoryCard';
 import PromoCarousel from '@/components/PromoCarousel';
-import { Search, MapPin, TrendingUp, Star, ShieldCheck, Zap, Tag, ChevronRight, TrendingDown, Mic, Store, Home as HomeIcon } from 'lucide-react';
+import { Search, MapPin, TrendingUp, Star, ShieldCheck, Zap, Tag, ChevronRight, TrendingDown, Store, Home as HomeIcon } from 'lucide-react';
 import { NEARBY_BUSINESSES, FEATURED_BUSINESSES, HOME_SERVICES, RECENT_SEARCHES } from '@/lib/data';
 import { TOP_9_CATEGORIES } from '@/lib/categories';
 import Image from 'next/image';
@@ -404,9 +404,6 @@ export default function HomePage() {
                   autoComplete="off"
                   className="flex-1 py-3.5 outline-none text-slate-900 font-bold placeholder-slate-400 bg-transparent text-base transition-all duration-500"
                 />
-                <button type="button" className="p-2 rounded-xl hover:bg-slate-100 transition-colors" title="Voice search">
-                  <Mic size={18} className="text-slate-400" />
-                </button>
               </div>
               <button
                 type="submit"

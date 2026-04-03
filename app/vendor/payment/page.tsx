@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle, Info } from 'lucide-react';
 
 function PaymentContent() {
     const router = useRouter();
@@ -113,6 +113,61 @@ function PaymentContent() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: 'var(--background)' }}>
              <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
+                {/* Admin-Controlled Subscription Banner */}
+                {feesConfig?.banner_enabled && (
+                    <div
+                        className="w-full rounded-2xl mb-6 shadow-lg overflow-hidden"
+                        style={{ border: '1.5px solid #fdba74' }}
+                    >
+                        {/* Optional Banner Image */}
+                        {feesConfig?.banner_image_url && (
+                            <img
+                                src={feesConfig.banner_image_url}
+                                alt="Subscription Banner"
+                                className="w-full h-40 object-cover"
+                            />
+                        )}
+                        <div
+                            className="p-6"
+                            style={{
+                                background: 'linear-gradient(135deg, #fff7ed 0%, #fef3c7 60%, #ffedd5 100%)',
+                            }}
+                        >
+                            <span
+                                className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3"
+                                style={{ background: 'linear-gradient(90deg, #f97316, #ef4444)', color: '#fff', letterSpacing: '0.03em' }}
+                            >
+                                {feesConfig.banner_badge || 'PREMIUM'}
+                            </span>
+                            <h2 className="text-2xl font-extrabold text-gray-900 mb-2 leading-tight">
+                                {feesConfig.banner_title || 'Unlock Your Potential'}
+                            </h2>
+                            <p className="text-gray-600 text-sm leading-relaxed">
+                                {feesConfig.banner_subtitle || 'Upgrade your subscription to access premium features and reach more customers.'}
+                            </p>
+                            <div className="mt-4 flex flex-wrap gap-4">
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Check size={12} className="text-orange-600" />
+                                    </span>
+                                    Instant account activation
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Check size={12} className="text-orange-600" />
+                                    </span>
+                                    Reach local customers
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-700">
+                                    <span className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Check size={12} className="text-orange-600" />
+                                    </span>
+                                    Flexible plans
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
                  <div className="text-center space-y-4 mb-8">
                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                          <AlertCircle size={32} className="text-orange-500" />

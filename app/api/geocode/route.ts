@@ -30,7 +30,11 @@ export async function GET(request: NextRequest) {
 
         const data = await response.json();
 
-        return NextResponse.json(data);
+        return NextResponse.json(data, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+            }
+        });
     } catch (error: any) {
         console.error('Geocoding error:', error);
         return NextResponse.json(

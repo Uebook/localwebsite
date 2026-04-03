@@ -32,6 +32,8 @@ export default function VendorDetailsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
   const params = useParams();
   const router = useRouter();
@@ -309,12 +311,41 @@ export default function VendorDetailsPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                className="relative h-72 sm:h-96 w-full rounded-3xl overflow-hidden shadow-2xl bg-slate-200"
+                className="relative h-72 sm:h-96 w-full rounded-3xl overflow-hidden shadow-2xl bg-slate-200 cursor-zoom-in group/hero"
+                onClick={() => setIsViewerOpen(true)}
               >
+                {/* Full View Icon Overlay — Always Visible */}
+                <div className="absolute inset-0 bg-black/10 transition-colors z-10 flex items-center justify-center duration-300">
+                  <div className="bg-white/25 backdrop-blur-md p-4 rounded-full border border-white/30 text-white shadow-xl transform hover:scale-110 transition-transform">
+                    <Search size={32} strokeWidth={2.5} />
+                    <p className="text-[10px] font-black uppercase tracking-tighter mt-1 text-center">Full View</p>
+                  </div>
+                </div>
                 {(() => {
+                  if (imgError) {
+                    return (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">
+                        <Image
+                          src="/lokall-logo.svg"
+                          alt="LOKALL Logo Fallback"
+                          width={120}
+                          height={120}
+                          className="opacity-20 grayscale"
+                        />
+                        <span className="mt-4 text-xs font-black text-slate-400 uppercase tracking-widest">Image coming soon</span>
+                      </div>
+                    );
+                  }
                   const imgUrl = business.profile_image_url || business.imageUrl || business.image_url || business.shop_front_photo_url || 'https://images.unsplash.com/photo-1574310391921-4b130467b2bb?auto=format&fit=crop&w=800&q=80';
                   return (
-                    <Image src={imgUrl} alt={business.name} fill className="object-cover" priority />
+                    <Image 
+                      src={imgUrl} 
+                      alt={business.name} 
+                      fill 
+                      className="object-cover" 
+                      priority 
+                      onError={() => setImgError(true)}
+                    />
                   );
                 })()}
                 {/* Gradient overlay */}
@@ -362,6 +393,11 @@ export default function VendorDetailsPage() {
                         Verified Partner
                       </span>
                     )}
+                    {(business.display_id || business.displayId) && (
+                      <span className="px-4 py-1.5 bg-orange-600/90 text-white border border-orange-500/30 text-xs font-black rounded-full backdrop-blur-md shadow-lg tracking-widest font-mono">
+                         ID: {business.display_id || business.displayId}
+                      </span>
+                    )}
                   </motion.div>
                   <motion.h1
                     initial={{ opacity: 0, y: 20 }}
@@ -382,9 +418,9 @@ export default function VendorDetailsPage() {
                       <span className="font-black text-lg">{realRating}</span>
                       <span className="text-white/60 text-xs font-bold">({realReviewCount} verified reviews)</span>
                     </div>
-                    <div className="flex items-center gap-2 text-white/90 text-sm font-black bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/5">
-                      <MapPin size={16} className="text-primary" style={{ color: 'var(--primary)' }} />
-                      {business.city || 'Vendor Location'}
+                    <div className="flex items-start gap-2 text-white/90 text-xs sm:text-sm font-black bg-black/40 backdrop-blur-md px-3 py-2 rounded-2xl border border-white/10 max-w-[200px] sm:max-w-[450px]">
+                      <MapPin size={16} className="text-primary flex-shrink-0 mt-0.5" style={{ color: 'var(--primary)' }} />
+                      <span className="line-clamp-2 leading-tight">{business.address || business.city || 'Vendor Location'}</span>
                     </div>
                   </motion.div>
                 </div>
@@ -585,22 +621,34 @@ export default function VendorDetailsPage() {
                                 <div className="flex flex-col justify-center min-w-0 flex-1">
                                   <div className="flex items-start justify-between gap-2">
                                     <h4 className="font-bold text-slate-900 text-base leading-tight truncate">{product.name}</h4>
-                                    {product.online_price && product.online_price > product.price && (
-                                      <span className="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0">
-                                        Save ₹{product.online_price - product.price}
-                                      </span>
-                                    )}
+                                    {(() => {
+                                      const comparisonPrice = Math.max(product.online_price || 0, product.mrp || 0);
+                                      if (comparisonPrice > product.price) {
+                                        return (
+                                          <span className="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shrink-0">
+                                            Save ₹{comparisonPrice - product.price}
+                                          </span>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
                                   </div>
                                   <span className="text-xs text-slate-400 font-medium mt-0.5 truncate">{product.category_name}</span>
-                                  <div className="flex items-baseline gap-2 mt-2">
+                                  <div className="flex items-baseline flex-wrap gap-3 mt-2">
                                     <div className="flex flex-col">
                                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Lokall Price</span>
                                       <span className="font-black text-lg text-orange-600">₹{product.price}</span>
                                     </div>
                                     {product.online_price && (
-                                      <div className="flex flex-col border-l border-slate-200 pl-2">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Online Price</span>
+                                      <div className="flex flex-col border-l border-slate-200 pl-3">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Online</span>
                                         <span className="text-slate-400 text-sm line-through font-medium">₹{product.online_price}</span>
+                                      </div>
+                                    )}
+                                    {product.mrp && (
+                                      <div className="flex flex-col border-l border-slate-200 pl-3">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">MRP</span>
+                                        <span className="text-slate-400 text-sm line-through font-medium">₹{product.mrp}</span>
                                       </div>
                                     )}
                                   </div>
@@ -858,6 +906,43 @@ export default function VendorDetailsPage() {
           />
         )}
       </div>
+      {/* Full Screen Image Viewer */}
+      <AnimatePresence>
+        {isViewerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 sm:p-20 cursor-zoom-out"
+            onClick={() => setIsViewerOpen(false)}
+          >
+            <motion.button
+              initial={{ scale: 0.8, rotate: -90 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="absolute top-8 right-8 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all z-[110]"
+              onClick={(e) => { e.stopPropagation(); setIsViewerOpen(false); }}
+            >
+              <ArrowLeft size={24} className="rotate-90" />
+            </motion.button>
+            <motion.div
+              layoutId="hero-image"
+              className="relative w-full h-full max-w-6xl max-h-[80vh]"
+            >
+              <Image
+                src={business.profile_image_url || business.imageUrl || business.image_url || business.shop_front_photo_url || 'https://images.unsplash.com/photo-1574310391921-4b130467b2bb?auto=format&fit=crop&w=800&q=80'}
+                alt={business.name}
+                fill
+                className="object-contain"
+                priority
+              />
+            </motion.div>
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
+               <h2 className="text-2xl font-black text-white mb-1">{business.name}</h2>
+               <p className="text-sm font-bold text-white/50 uppercase tracking-[0.3em]">Full View Mode</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

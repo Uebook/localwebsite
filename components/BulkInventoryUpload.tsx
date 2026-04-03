@@ -16,7 +16,7 @@ export default function BulkInventoryUpload({ vendorId, onSuccess, onCancel }: B
        const [success, setSuccess] = useState('');
 
        const handleDownloadTemplate = () => {
-              const headers = ['Name', 'Price', 'MRP', 'UOM', 'Description', 'Category ID'];
+              const headers = ['Name', 'Local Price', 'Online Price', 'MRP', 'UOM', 'Description', 'Category ID'];
               const csvContent = "data:text/csv;charset=utf-8," + headers.join(",");
               const encodedUri = encodeURI(csvContent);
               const link = document.createElement("a");
@@ -53,13 +53,14 @@ export default function BulkInventoryUpload({ vendorId, onSuccess, onCancel }: B
                      for (let i = 1; i < lines.length; i++) {
                             const line = lines[i].trim();
                             if (!line) continue;
-                            const [name, price, mrp, uom, description, categoryId] = line.split(',');
+                            const [name, localPrice, onlinePrice, mrp, uom, description, categoryId] = line.split(',');
 
-                            if (name && price) {
+                            if (name && localPrice) {
                                    products.push({
                                           vendorId,
                                           name,
-                                          price: parseFloat(price),
+                                          price: parseFloat(localPrice),
+                                          onlinePrice: onlinePrice ? parseFloat(onlinePrice) : null,
                                           mrp: mrp ? parseFloat(mrp) : null,
                                           uom: uom || 'Piece',
                                           description: description || '',

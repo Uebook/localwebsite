@@ -58,7 +58,7 @@ export default function VendorDashboardLayout({ children, hideTabs = false }: Ve
 
   const tabs = [
     { id: 'analytics', label: 'Analytics', icon: Activity, href: '/vendor/dashboard/analytics' },
-    { id: 'catalog', label: 'Catalog', icon: Package, href: '/vendor/dashboard/catalog' },
+    { id: 'catalog', label: 'Catalogue', icon: Package, href: '/vendor/dashboard/catalog' },
     { id: 'offers', label: 'Offer & Sale', icon: Star, href: '/vendor/dashboard/offers' },
     { id: 'enquiries', label: 'Enquiries', icon: MessageSquare, href: '/vendor/dashboard/enquiries' },
     { id: 'reviews', label: 'Reviews', icon: Star, href: '/vendor/dashboard/reviews' },

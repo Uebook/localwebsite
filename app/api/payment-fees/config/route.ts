@@ -12,6 +12,11 @@ export async function GET() {
       yearly_fee: 599,
       grace_period_days: 7,
       auto_block_enabled: true,
+      banner_enabled: true,
+      banner_badge: '🚀 Registration Offer',
+      banner_title: 'Activate Your Vendor Account',
+      banner_subtitle: 'Choose a subscription plan to start selling on Local Market and reach thousands of customers in your area.',
+      banner_image_url: '',
     });
   } catch (error: any) {
     console.error('Error fetching payment fees config:', error.message);
@@ -23,6 +28,11 @@ export async function GET() {
       yearly_fee: 599,
       grace_period_days: 7,
       auto_block_enabled: true,
+      banner_enabled: true,
+      banner_badge: '🚀 Registration Offer',
+      banner_title: 'Activate Your Vendor Account',
+      banner_subtitle: 'Choose a subscription plan to start selling on Local Market and reach thousands of customers in your area.',
+      banner_image_url: '',
       ...(isOffline && { warning: 'offline_mode' })
     });
   }

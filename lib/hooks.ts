@@ -90,65 +90,14 @@ export const useLocation = () => {
             async (position) => {
                 const { latitude: lat, longitude: lng } = position.coords;
                 try {
-                    const res = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`);
+                    const res = await fetch(`/api/location/detect?lat=${lat}&lng=${lng}`);
                     const data = await res.json();
 
-                    if (data.error) throw new Error(data.error);
+                    if (!res.ok || data.error) throw new Error(data.error || 'Failed to detect area');
 
-                    const addr = data.address || {};
-                    console.log('useLocation: Raw Geocode Address:', addr);
+                    console.log('useLocation: Optimized Detection Result:', data);
 
-                    // Specific priority for "Area" as requested
-                    // Villages and small hamlets often provide the exact name like "Bisrakh"
-                    const mainArea =
-                        addr.village ||
-                        addr.hamlet ||
-                        addr.suburb ||
-                        addr.neighbourhood ||
-                        addr.residential ||
-                        addr.allotments ||
-                        addr.city_district ||
-                        addr.industrial ||
-                        addr.city ||
-                        addr.town ||
-                        addr.county ||
-                        'Your Area';
-
-                    const subArea = (mainArea === addr.village || mainArea === addr.hamlet)
-                        ? (addr.suburb || addr.neighbourhood || '')
-                        : '';
-
-                    let displayLabel = mainArea;
-                    if (subArea && subArea !== mainArea) {
-                        displayLabel = `${mainArea}, ${subArea}`;
-                    }
-
-                    const city = addr.city || addr.town || addr.city_district || '';
-                    if (city && city !== mainArea && city !== subArea && !displayLabel.includes(city)) {
-                        displayLabel = `${displayLabel}, ${city}`;
-                    }
-
-                    const state = addr.state || '';
-                    if (state && !displayLabel.includes(state) && displayLabel.split(',').length < 3) {
-                        displayLabel = `${displayLabel}, ${state}`;
-                    }
-
-                    // --- NEW: Try to find a matching Market Circle for this area ---
-                    try {
-                        const circleSearchQuery = mainArea !== 'Your Area' ? mainArea : (city || state);
-                        if (circleSearchQuery) {
-                            const circleRes = await fetch(`/api/circles?city=${encodeURIComponent(circleSearchQuery)}`);
-                            const circleData = await circleRes.json();
-                            if (circleData.success && circleData.circles && circleData.circles.length > 0) {
-                                const circleName = circleData.circles[0].name;
-                                console.log('useLocation: Found matching circle:', circleName);
-                                displayLabel = circleName;
-                            }
-                        }
-                    } catch (err) {
-                        console.error('useLocation: Failed to fetch matching circle', err);
-                    }
-
+                    const displayLabel = data.displayLabel || 'Your Area';
                     updateLocation({ lat, lng, city: displayLabel, loading: false, error: null });
                     console.log('useLocation: Detection complete:', displayLabel);
                 } catch (err: any) {
@@ -161,7 +110,7 @@ export const useLocation = () => {
                 updateLocation({ loading: false, error: msg });
                 console.warn('useLocation: Geolocation failed', msg);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
         );
     }, [updateLocation]);
 

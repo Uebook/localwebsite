@@ -41,6 +41,16 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        const generateDisplayId = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 5; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
+        const displayId = generateDisplayId();
         const finalCategory = category === 'Services' && subCategory ? subCategory : category;
 
         const vendor = {
@@ -54,13 +64,15 @@ export async function POST(request: NextRequest) {
             city: city?.trim() || null,
             pincode: pincode?.trim() || null,
             status: 'Pending',
-            kyc_status: 'Pending', // Setting to Pending until verified
+            kyc_status: 'Pending',
             product_count: 0,
             id_proof_url: idProofUrl || null,
             shop_front_photo_url: businessPhotoUrl || null,
-            image_url: businessPhotoUrl || null, // Also set image_url for consistency
-            state: body.state || null, // Added state
-            town: body.area || body.town || null, // Map area to town
+            image_url: businessPhotoUrl || null,
+            shop_proof_url: body.shopDocumentUrl || null, // Added for KYC
+            display_id: displayId, // Added 5-character short ID
+            state: body.state || null,
+            town: body.area || body.town || null,
             latitude: latitude ?? null,
             longitude: longitude ?? null,
             circle: circle || null,

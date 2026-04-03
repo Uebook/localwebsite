@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
         }
 
         const query = new URLSearchParams();
-        query.set('select', 'id,name,price,mrp,uom');
+        query.set('select', 'id,name,price,online_price,mrp,uom,image_url');
         query.set('vendor_id', `eq.${vendorId}`);
         query.set('order', 'name.asc');
 
@@ -21,19 +21,23 @@ export async function GET(req: NextRequest) {
         const templateRows = data.map((p) => ({
             'Vendor Product ID': p.id,
             'Product Name': p.name,
-            'Current Price': p.price ?? '',
-            'New Price': '',
+            'Local Price (current)': p.price ?? '',
+            'New Local Price': '',
+            'Online Price (optional)': p.online_price ?? '',
             'MRP (optional)': p.mrp ?? '',
             UOM: p.uom ?? '',
+            'Image URL (optional)': p.image_url ?? '',
         }));
 
         const ws = XLSX.utils.json_to_sheet(templateRows.length ? templateRows : [{
             'Vendor Product ID': '',
             'Product Name': '',
-            'Current Price': '',
-            'New Price': '',
+            'Local Price (current)': '',
+            'New Local Price': '',
+            'Online Price (optional)': '',
             'MRP (optional)': '',
             UOM: '',
+            'Image URL (optional)': '',
         }]);
 
         const wb = XLSX.utils.book_new();

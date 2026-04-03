@@ -77,8 +77,8 @@ function AnalyticsContent() {
     {
       title: 'User Engagement',
       description: 'Views and interactions',
-      value: '+15%',
-      trend: 'up',
+      value: '0%',
+      trend: 'none',
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
@@ -86,8 +86,8 @@ function AnalyticsContent() {
     {
       title: 'Page Views',
       description: 'Total profile views',
-      value: '1,234',
-      trend: 'up',
+      value: (displayVendor.profileViews ?? 0).toLocaleString(),
+      trend: (displayVendor.profileViews ?? 0) > 0 ? 'up' : 'none',
       icon: Eye,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50'
@@ -95,8 +95,8 @@ function AnalyticsContent() {
     {
       title: 'Conversion Rate',
       description: 'Enquiries to sales',
-      value: '+8%',
-      trend: 'up',
+      value: '0%',
+      trend: 'none',
       icon: ShoppingCart,
       color: 'text-green-600',
       bgColor: 'bg-green-50'
@@ -104,20 +104,15 @@ function AnalyticsContent() {
     {
       title: 'Revenue Potential',
       description: 'Estimated monthly',
-      value: '₹45,000',
-      trend: 'up',
+      value: '₹0',
+      trend: 'none',
       icon: DollarSign,
       color: 'text-orange-600',
       bgColor: 'bg-orange-50'
     },
   ];
 
-  const competitionData = [
-    { item: 'Rice (1kg)', searches: 120, marketPrice: '₹80', lowestNearby: '₹75', yourPrice: '₹78', status: 'competitive' },
-    { item: 'Milk (1L)', searches: 95, marketPrice: '₹60', lowestNearby: '₹58', yourPrice: '₹59', status: 'competitive' },
-    { item: 'Bread', searches: 78, marketPrice: '₹40', lowestNearby: '₹38', yourPrice: '₹42', status: 'higher' },
-    { item: 'Eggs (Dozen)', searches: 65, marketPrice: '₹70', lowestNearby: '₹68', yourPrice: '₹72', status: 'higher' },
-  ];
+  const competitionData: any[] = [];
 
   // Helper to map icon names to Lucide icons
   const getIcon = (iconName: string) => {
@@ -131,14 +126,7 @@ function AnalyticsContent() {
     }
   };
 
-  const monthlyData = [
-    { month: 'Jan', value: 65 },
-    { month: 'Feb', value: 72 },
-    { month: 'Mar', value: 68 },
-    { month: 'Apr', value: 80 },
-    { month: 'May', value: 85 },
-    { month: 'Jun', value: 90 },
-  ];
+  const monthlyData: any[] = [];
 
   const maxValue = Math.max(...monthlyData.map(d => d.value));
 
@@ -171,7 +159,13 @@ function AnalyticsContent() {
       <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900">Performance Insights</h2>
-          <button className="text-orange-500 text-sm font-medium hover:text-orange-600">
+          <button 
+            onClick={() => {
+              const element = document.getElementById('performance-trend');
+              element?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="text-orange-500 text-sm font-medium hover:text-orange-600"
+          >
             View Report →
           </button>
         </div>
@@ -194,7 +188,7 @@ function AnalyticsContent() {
                   {metric.trend === 'up' && (
                     <span className="text-green-600 text-sm font-medium flex items-center gap-1">
                       <TrendingUp size={16} />
-                      <span>+12%</span>
+                      <span>Trending Up</span>
                     </span>
                   )}
                 </div>
@@ -205,23 +199,29 @@ function AnalyticsContent() {
       </div>
 
       {/* Motivation Graph */}
-      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+      <div id="performance-trend" className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         <h2 className="text-xl font-bold mb-6 text-gray-900">Performance Trend</h2>
         <div className="space-y-4">
-          <div className="flex items-end justify-between h-48 gap-2">
-            {monthlyData.map((data, index) => (
-              <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
-                <div className="relative w-full h-40 bg-gray-100 rounded-t-lg overflow-hidden">
-                  <div
-                    className="absolute bottom-0 w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t-lg transition-all duration-500"
-                    style={{ height: `${(data.value / maxValue) * 100}%` }}
-                  />
+          {monthlyData.length > 0 ? (
+            <div className="flex items-end justify-between h-48 gap-2">
+              {monthlyData.map((data, index) => (
+                <div key={data.month} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="relative w-full h-40 bg-gray-100 rounded-t-lg overflow-hidden">
+                    <div
+                      className="absolute bottom-0 w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t-lg transition-all duration-500"
+                      style={{ height: `${(data.value / maxValue) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{data.month}</span>
+                  <span className="text-xs text-gray-900 font-semibold">{data.value}%</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{data.month}</span>
-                <span className="text-xs text-gray-900 font-semibold">{data.value}%</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-48 flex items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <p className="text-sm text-gray-400 font-medium italic">No performance trend data available yet.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -229,37 +229,43 @@ function AnalyticsContent() {
       <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         <h2 className="text-xl font-bold mb-6 text-gray-900">Competition Analysis</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Item</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Searches</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Market Price</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Lowest Nearby</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Your Price</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {competitionData.map((item, index) => (
-                <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-4 font-medium text-gray-900">{item.item}</td>
-                  <td className="py-3 px-4 text-gray-900">{item.searches}</td>
-                  <td className="py-3 px-4 text-gray-900">{item.marketPrice}</td>
-                  <td className="py-3 px-4 text-gray-900">{item.lowestNearby}</td>
-                  <td className="py-3 px-4 font-semibold text-gray-900">{item.yourPrice}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === 'competitive'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-orange-100 text-orange-700'
-                      }`}>
-                      {item.status === 'competitive' ? 'Competitive' : 'Higher'}
-                    </span>
-                  </td>
+          {competitionData.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Item</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Searches</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Market Price</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Lowest Nearby</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Your Price</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {competitionData.map((item, index) => (
+                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4 font-medium text-gray-900">{item.item}</td>
+                    <td className="py-3 px-4 text-gray-900">{item.searches}</td>
+                    <td className="py-3 px-4 text-gray-900">{item.marketPrice}</td>
+                    <td className="py-3 px-4 text-gray-900">{item.lowestNearby}</td>
+                    <td className="py-3 px-4 font-semibold text-gray-900">{item.yourPrice}</td>
+                    <td className="py-3 px-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${item.status === 'competitive'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-orange-100 text-orange-700'
+                        }`}>
+                        {item.status === 'competitive' ? 'Competitive' : 'Higher'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
+              <p className="text-sm text-gray-400 font-medium italic">Competition analysis will appear once your products gain visibility.</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -307,10 +313,13 @@ function AnalyticsContent() {
                       }`}>
                       {rec.description}
                     </p>
-                    <button className={`mt-3 text-sm font-medium ${rec.priority === 'high' ? 'text-orange-600 hover:text-orange-700' :
+                    <button 
+                      onClick={() => router.push('/vendor/dashboard/catalog')}
+                      className={`mt-3 text-sm font-medium ${rec.priority === 'high' ? 'text-orange-600 hover:text-orange-700' :
                       rec.priority === 'medium' ? 'text-blue-600 hover:text-blue-700' :
                         'text-gray-900 hover:text-gray-700'
-                      }`}>
+                      }`}
+                    >
                       Take Action →
                     </button>
                   </div>
@@ -355,16 +364,17 @@ function TrendingNearlySection({
       ) : trending.length > 0 ? (
         <div className="flex flex-wrap gap-3">
           {trending.map((item, index) => (
-            <div
+            <button
               key={index}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl hover:border-orange-200 hover:bg-orange-50 transition-all cursor-default group"
+              onClick={() => window.open(`/search?q=${encodeURIComponent(item.query)}&city=${encodeURIComponent(city)}`, '_blank')}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl hover:border-orange-200 hover:bg-orange-50 transition-all cursor-pointer group"
             >
               <Search size={14} className="text-slate-400 group-hover:text-orange-500" />
               <span className="text-sm font-bold text-slate-700 uppercase tracking-tight">{item.query}</span>
               <span className="text-xs font-black text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-md">
                 {item.count}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       ) : (

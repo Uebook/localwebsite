@@ -25,6 +25,7 @@ export default function VendorRegisterPage() {
     longitude: null as number | null,
     idProof: null as File | null,
     businessPhoto: null as File | null,
+    shopDocument: null as File | null,
   });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -195,6 +196,7 @@ export default function VendorRegisterPage() {
     } else if (currentStep === 4) {
       if (!formData.idProof) { setError('ID Proof is required'); return false; }
       if (!formData.businessPhoto) { setError('Business Photo is required'); return false; }
+      if (!formData.shopDocument) { setError('Shop Document / KYC is required'); return false; }
     }
     return true;
   };
@@ -219,8 +221,13 @@ export default function VendorRegisterPage() {
         businessPhotoUrl = await uploadFile(formData.businessPhoto, 'shop-photos');
       }
 
+      let shopDocumentUrl = '';
+      if (formData.shopDocument) {
+        shopDocumentUrl = await uploadFile(formData.shopDocument, 'kyc-documents');
+      }
+
       // Sanitize payload: remove File objects before sending
-      const { idProof, businessPhoto, ...restData } = formData;
+      const { idProof, businessPhoto, shopDocument, ...restData } = formData;
 
       const res = await fetch('/api/vendor/auth/register', {
         method: 'POST',
@@ -229,6 +236,7 @@ export default function VendorRegisterPage() {
           ...restData,
           idProofUrl,
           businessPhotoUrl,
+          shopDocumentUrl,
         }),
       });
       const data = await res.json();
@@ -882,6 +890,39 @@ export default function VendorRegisterPage() {
                   </div>
                 </div>
 
+                {/* Shop/Business KYC Document Upload */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    Shop Document / KYC (Trade License, GST, etc.) <span className="text-red-500">*</span>
+                  </label>
+                  <div className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${formData.shopDocument ? 'border-green-500 bg-green-50' : 'border-gray-300 hover:border-primary'
+                    }`}>
+                    {formData.shopDocument ? (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-500 text-white rounded-lg">
+                            <FileText size={24} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900 truncate max-w-[200px]">{formData.shopDocument.name}</p>
+                            <p className="text-xs text-gray-500">{(formData.shopDocument.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => handleFileChange('shopDocument', null)} className="p-1 hover:bg-green-100 rounded-full text-green-600">
+                          <X size={20} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center cursor-pointer">
+                        <FileText className="text-gray-400 mb-2" size={32} />
+                        <span className="text-sm font-medium text-gray-900">Click to upload shop document</span>
+                        <span className="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 5MB</span>
+                        <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileChange('shopDocument', e.target.files?.[0] || null)} />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
@@ -892,7 +933,7 @@ export default function VendorRegisterPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={isLoading || !formData.idProof || !formData.businessPhoto}
+                    disabled={isLoading || !formData.idProof || !formData.businessPhoto || !formData.shopDocument}
                     className="flex-1 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" style={{ background: 'var(--primary)' }}
                   >
                     {isLoading ? 'Registering...' : 'Complete Registration'}

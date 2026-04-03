@@ -8,7 +8,7 @@ import AddProductModal from '@/components/AddProductModal';
 import BulkInventoryUpload from '@/components/BulkInventoryUpload';
 import { Download as DownloadIcon } from 'lucide-react';
 
-function CatalogContent() {
+function CatalogueContent() {
   const { products, vendor, loading, refresh } = useVendor();
   const [searchQuery, setSearchQuery] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -47,7 +47,7 @@ function CatalogContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">Product Catalog</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">Product Catalogue</h1>
           <p className="text-slate-400 text-sm mt-0.5">{products.length} products listed</p>
         </div>
         <div className="flex items-center gap-3">
@@ -138,12 +138,19 @@ function CatalogContent() {
                   <h3 className="font-bold text-slate-900 text-sm leading-tight line-clamp-1">{name}</h3>
                   {cat && <p className="text-xs text-slate-400 mt-0.5 mb-2">{cat}</p>}
                   <div className="flex items-center justify-between mb-3">
-                    <div>
+                    <div className="space-y-0.5">
                       <p className="font-black text-sm flex items-center gap-0.5" style={{ color: 'var(--primary)' }}>
-                        <IndianRupee size={12} />{price ?? 'N/A'}
+                        <IndianRupee size={12} />{price ?? 'N/A'} <span className="text-[9px] font-bold text-slate-400 uppercase">(Local)</span>
                       </p>
-                      {mrp && mrp !== price && (
-                        <p className="text-slate-300 text-xs line-through">₹{mrp}</p>
+                      {product.online_price && (
+                        <p className="text-slate-400 text-[10px] flex items-center gap-0.5 font-bold">
+                          <IndianRupee size={10} />{product.online_price} <span className="text-[8px] uppercase">(Online)</span>
+                        </p>
+                      )}
+                      {mrp && Number(mrp) > 0 && (
+                        <p className="text-slate-300 text-[10px] line-through flex items-center gap-0.5">
+                          <IndianRupee size={10} />{mrp} <span className="text-[8px] uppercase">(MRP)</span>
+                        </p>
                       )}
                     </div>
                     {qty != null && <span className="text-xs text-slate-400">Qty: {qty}</span>}
@@ -192,10 +199,10 @@ function CatalogContent() {
   );
 }
 
-export default function VendorCatalogPage() {
+export default function VendorCataloguePage() {
   return (
     <VendorDashboardLayout>
-      <CatalogContent />
+      <CatalogueContent />
     </VendorDashboardLayout>
   );
 }

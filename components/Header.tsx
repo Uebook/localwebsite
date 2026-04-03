@@ -318,7 +318,7 @@ export default function Header({
                       {user.role === 'vendor' ? 'Vendor Dashboard' : 'My Dashboard'}
                     </Link>
                     <Link
-                      href="/dashboard/profile"
+                      href={user.role === 'vendor' ? '/vendor/dashboard/profile' : '/dashboard/profile'}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors font-medium"
                     >

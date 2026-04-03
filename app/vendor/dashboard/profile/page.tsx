@@ -140,6 +140,12 @@ function ProfileContent() {
             <p className="font-black text-slate-900">{displayVendor.name}</p>
             <p className="text-xs text-slate-400">{displayVendor.category}</p>
           </div>
+          {displayVendor.display_id && (
+            <div className="ml-auto flex flex-col items-end">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tracking ID</span>
+              <span className="text-lg font-black text-orange-600 font-mono">{displayVendor.display_id}</span>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field key="f-name" label="Business Name" field="name" form={form} setForm={setForm} isEditing={isEditing} />
@@ -168,6 +174,87 @@ function ProfileContent() {
         </div>
       </div>
 
+      {/* KYC & Documents */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2"><CheckCircle size={16} /> KYC & Documents</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { label: 'ID Proof', field: 'id_proof_url', value: displayVendor.id_proof_url },
+            { label: 'Shop Front Photo', field: 'shop_front_photo_url', value: displayVendor.shopFrontPhotoUrl || displayVendor.imageUrl },
+            { label: 'Business Document (KYC)', field: 'shop_proof_url', value: displayVendor.shop_proof_url },
+          ].map((doc) => (
+            <div key={doc.field} className="relative group">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{doc.label}</label>
+              <div className="aspect-video rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden relative">
+                {doc.value ? (
+                  <>
+                    <img
+                      src={doc.value}
+                      alt={doc.label}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                       <button
+                        onClick={() => window.open(doc.value, '_blank')}
+                        className="p-2 bg-white rounded-full text-slate-900 hover:scale-110 transition-transform shadow-lg"
+                        title="View Full Size"
+                      >
+                         <Save size={14} className="rotate-45" />
+                       </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center p-4">
+                    <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2 text-slate-300">
+                      <AlertCircle size={20} />
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-400 italic">Not Uploaded</p>
+                  </div>
+                )}
+                
+                {/* Upload Overlay */}
+                <label className="absolute bottom-2 right-2 p-2 bg-white/90 backdrop-blur rounded-lg shadow-xl cursor-pointer hover:bg-white transition-colors border border-slate-100 active:scale-95">
+                  <Edit size={12} className="text-slate-600" />
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*,.pdf"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      formData.append('bucket', 'vendor-documents');
+                      formData.append('folder', doc.field === 'id_proof_url' ? 'id-proofs' : doc.field === 'shop_proof_url' ? 'kyc-documents' : 'shop-photos');
+
+                      try {
+                        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        if (res.ok && data.url) {
+                          await fetch('/api/vendor/profile', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: displayVendor.id, [doc.field]: data.url, image_url: (doc.field === 'shop_front_photo_url' ? data.url : undefined) }),
+                          });
+                          refresh();
+                          setSuccess(`${doc.label} updated!`);
+                          setTimeout(() => setSuccess(''), 3000);
+                        }
+                      } catch (err) {
+                        setError('Update failed');
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-slate-400 mt-4 px-1 leading-relaxed">
+          <b>Note:</b> Replacing these documents will trigger a re-verification of your KYC status. Your shop will remain active while we review the new documents.
+        </p>
+      </div>
+
       {/* Account Status */}
       <div className="bg-white rounded-2xl border border-slate-100 p-5">
         <h3 className="font-bold text-slate-900 mb-4">Account Status</h3>
@@ -187,7 +274,7 @@ function ProfileContent() {
           ))}
         </div>
         {displayVendor.id && (
-          <p className="text-xs text-slate-300 mt-3 font-mono">Vendor ID: {String(displayVendor.id).toUpperCase()}</p>
+          <p className="text-[10px] text-slate-300 mt-3 font-mono">System ID: {String(displayVendor.id).toUpperCase()}</p>
         )}
       </div>
     </div>

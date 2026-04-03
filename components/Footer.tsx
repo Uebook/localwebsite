@@ -56,15 +56,21 @@ const Footer = () => {
                             India's first local price intelligence app. We empower users to find the cheapest nearby markets and products with live performance data.
                         </p>
                         <div className="flex items-center gap-4 pt-2">
-                            <a href={settings.facebook_url || '#'} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
-                                <Facebook size={18} />
-                            </a>
-                            <a href={settings.twitter_url || '#'} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
-                                <Twitter size={18} />
-                            </a>
-                            <a href={settings.instagram_url || '#'} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
-                                <Instagram size={18} />
-                            </a>
+                            {settings.facebook_url && (
+                                <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
+                                    <Facebook size={18} />
+                                </a>
+                            )}
+                            {settings.twitter_url && (
+                                <a href={settings.twitter_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
+                                    <Twitter size={18} />
+                                </a>
+                            )}
+                            {settings.instagram_url && (
+                                <a href={settings.instagram_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all duration-300">
+                                    <Instagram size={18} />
+                                </a>
+                            )}
                         </div>
                     </div>
 

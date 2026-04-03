@@ -11,12 +11,28 @@ export async function GET(request: Request) {
 
        try {
               // 1. Fetch vendors in this market
-              // Use a simpler string or even separate queries if needed, but or=(...) is fine if encoded correctly.
-              // We use .ilike for better match flexibility and case-insensitivity
-              const query = `/rest/v1/vendors?or=(sub_tehsil.ilike.*${marketName}*,circle.ilike.*${marketName}*)&select=*`;
+              // To handle typos (like STREET vs STREERT), we'll do a more fuzzy search
+              // We'll search for the full name first, then words if no results, 
+              // or just use a broader OR with the first significant word.
+              
+              const words = marketName.split(/\s+/).filter(w => 
+                     w.length > 2 && !['market', 'street', 'circle', 'area', 'town'].includes(w.toLowerCase())
+              );
+              const primaryKeyword = words[0] || marketName;
+              const encodedKeyword = encodeURIComponent(`*${primaryKeyword}*`);
+              const encodedFullName = encodeURIComponent(`*${marketName}*`);
+
+              // Try searching for the full name OR the primary keyword across columns
+              const query = `/rest/v1/vendors?or=(sub_tehsil.ilike.${encodedFullName},circle.ilike.${encodedFullName},town.ilike.${encodedFullName},circle.ilike.${encodedKeyword},town.ilike.${encodedKeyword})&select=*`;
               const vendorsResponse = await supabaseRestGet(query);
 
-              const vendors = (vendorsResponse || []).filter((v: any) => v.status === 'Active');
+              // Allow any shop that is Active, or has been verified by admin
+              const vendors = (vendorsResponse || []).filter((v: any) => 
+                     v.status === 'Active' || 
+                     v.is_verified === true || 
+                     v.kyc_status === 'Verified' ||
+                     v.kycStatus === 'Verified'
+              );
 
               // 2. Fetch some products from these vendors to show trending items
               let products: any[] = [];

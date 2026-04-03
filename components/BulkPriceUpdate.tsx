@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, Download, File, X, CheckCircle, Info, AlertCircle } from 'lucide-react';
+import { Upload, Download, File, X, CheckCircle, Info, AlertCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useVendor } from '@/components/VendorDashboardLayout';
 
 interface BulkPriceUpdateProps {
@@ -12,8 +12,11 @@ interface BulkPriceUpdateProps {
 
 export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdatePrices }: BulkPriceUpdateProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [uploadResults, setUploadResults] = useState<any[]>([]);
 
   const { vendor, loading: vendorLoading } = useVendor();
 
@@ -102,6 +105,48 @@ export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdateP
     }
   };
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      const validImages = selectedFiles.filter(f => f.type.startsWith('image/'));
+      if (validImages.length < selectedFiles.length) {
+          alert('Some files were skipped. Please only upload images.');
+      }
+      setImageFiles(prev => [...prev, ...validImages]);
+      setUploadResults([]); // Clear previous results
+    }
+  };
+
+  const handleBulkImageUpload = async () => {
+    if (imageFiles.length === 0) return;
+    if (!vendor?.id) return;
+
+    setImageLoading(true);
+    setUploadResults([]);
+    
+    try {
+      const formData = new FormData();
+      formData.append('vendorId', vendor.id);
+      imageFiles.forEach(f => formData.append('files', f));
+
+      const res = await fetch('/api/vendor-products/bulk-images', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      setUploadResults(data.results || []);
+      setImageFiles([]); // Clear queue on success
+      if (onUpdatePrices) onUpdatePrices(); // Refresh data
+    } catch (err: any) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -114,7 +159,7 @@ export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdateP
               <X className="w-5 h-5 text-gray-600" />
             </button>
           )}
-          <h1 className="text-xl font-bold text-gray-900 flex-1 text-center">Bulk Price Update</h1>
+          <h1 className="text-xl font-bold text-gray-900 flex-1 text-center">Bulk Product Update</h1>
           <button
             onClick={() => setShowInstructions(true)}
             className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -132,7 +177,7 @@ export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdateP
             <h2 className="text-lg font-bold text-gray-900">Download Template</h2>
           </div>
           <p className="text-gray-600 mb-4">
-            Download the Excel template with your current products. Fill in the "New Price" column and upload it back.
+            Download the Excel template with your current products. You can update **Prices**, **MRP**, and **Image URLs** then upload it back.
           </p>
           <button
             onClick={handleDownloadTemplate}
@@ -200,10 +245,68 @@ export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdateP
               ) : (
                 <>
                   <CheckCircle className="w-5 h-5" />
-                  <span>Upload & Update Prices</span>
+                  <span>Update Prices & Data</span>
                 </>
               )}
             </button>
+          )}
+        </div>
+
+        {/* NEW: Bulk Image Upload Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <ImageIcon className="w-6 h-6 text-blue-600" />
+            <h2 className="text-lg font-bold text-gray-900">Bulk Image Uploader</h2>
+          </div>
+          <p className="text-gray-600 mb-4">
+            Select multiple images to upload. Name your files after your products (e.g., <code className="bg-gray-100 px-1 rounded text-orange-600">Milk.jpg</code>) and we will match them automatically.
+          </p>
+
+          <label className="block mb-4">
+            <div className="border-2 border-dashed border-blue-200 rounded-lg p-6 text-center bg-blue-50/30 cursor-pointer hover:bg-blue-50 transition">
+              <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <p className="font-semibold text-blue-600">Select Multiple Images</p>
+              <p className="text-xs text-slate-400">Match by Product Name</p>
+            </div>
+            <input type="file" multiple accept="image/*" onChange={handleImageFileChange} className="hidden" />
+          </label>
+
+          {imageFiles.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm font-bold text-slate-700 mb-2">{imageFiles.length} images selected</p>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 bg-slate-50 rounded-lg">
+                {imageFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 text-[10px] font-medium text-slate-600">
+                    <span className="truncate max-w-[100px]">{f.name}</span>
+                    <button onClick={() => setImageFiles(prev => prev.filter((_, idx) => idx !== i))}>
+                      <X size={10} className="text-red-400" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={handleBulkImageUpload}
+                disabled={imageLoading}
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 mt-4 flex items-center justify-center gap-2"
+              >
+                {imageLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload size={18} />}
+                <span>Upload & Match Images</span>
+              </button>
+            </div>
+          )}
+
+          {uploadResults.length > 0 && (
+            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <h3 className="text-sm font-bold mb-3">Upload Results</h3>
+              <div className="space-y-2 max-h-40 overflow-y-auto text-xs">
+                {uploadResults.map((res, i) => (
+                  <div key={i} className={`flex items-center justify-between p-2 rounded ${res.status === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                    <span className="truncate max-w-[200px]">{res.fileName}</span>
+                    <span className="font-bold">{res.status === 'success' ? 'Matched: ' + res.productName : res.message}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
@@ -214,10 +317,9 @@ export default function BulkPriceUpdate({ onBack, vendorProducts = [], onUpdateP
             <h2 className="text-lg font-bold text-gray-900">Instructions</h2>
           </div>
           <ol className="space-y-3 list-decimal list-inside text-gray-600">
-            <li>Download the template Excel file</li>
-            <li>Fill in the "New Price" column with updated prices</li>
-            <li>Keep "Product ID" and other columns unchanged</li>
-            <li>Upload the completed file to update prices in bulk</li>
+            <li>Fill in the "New Price" or "Image URL (optional)" columns</li>
+            <li>Maintain existing IDs to ensure correct updates</li>
+            <li>Use the Multi-Image Uploader for local files (match by name)</li>
           </ol>
         </div>
       </div>

@@ -34,23 +34,27 @@ export async function POST(req: NextRequest) {
         rows.forEach((r, idx) => {
             const rowNo = idx + 2;
             const id = toStr(r['Vendor Product ID'] ?? r['vendor_product_id'] ?? r['id']);
-            const newPrice = toNum(r['New Price'] ?? r['new_price'] ?? r['price']);
+            const newLocalPrice = toNum(r['New Local Price'] ?? r['new_local_price'] ?? r['New Price'] ?? r['new_price'] ?? r['price']);
+            const onlinePrice = toNum(r['Online Price (optional)'] ?? r['online_price']);
             const mrp = toNum(r['MRP (optional)'] ?? r['mrp']);
+            const imageUrl = toStr(r['Image URL (optional)'] ?? r['image_url']);
 
             if (!id) {
                 errors.push({ row: rowNo, error: 'Vendor Product ID is required' });
                 return;
             }
-            if (newPrice === null || newPrice <= 0) {
-                errors.push({ row: rowNo, error: 'New Price must be a number > 0' });
+            if (newLocalPrice === null || newLocalPrice <= 0) {
+                errors.push({ row: rowNo, error: 'Local Price must be a number > 0' });
                 return;
             }
 
             updates.push({
                 id,
                 vendor_id: vendorId,
-                price: newPrice,
+                price: newLocalPrice,
+                online_price: onlinePrice,
                 mrp,
+                image_url: imageUrl || undefined,
                 updated_at: new Date().toISOString(),
             });
         });

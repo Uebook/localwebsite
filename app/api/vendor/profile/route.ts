@@ -49,6 +49,9 @@ export async function GET(request: NextRequest) {
                 createdAt: v.created_at ?? '',
                 profileViews: v.profile_views ?? 0,
                 searchAppearances: v.search_appearances ?? 0,
+                display_id: v.display_id || null,
+                id_proof_url: v.id_proof_url || null,
+                shop_proof_url: v.shop_proof_url || null,
             },
             products: Array.isArray(products) ? products.map((p: any) => ({
                 ...p,
@@ -71,7 +74,7 @@ export async function PATCH(request: NextRequest) {
         const { id, ...updates } = body;
         if (!id) return NextResponse.json({ error: 'Vendor ID required' }, { status: 400 });
 
-        const allowed = ['name', 'owner_name', 'email', 'address', 'city', 'state', 'pincode', 'about', 'open_time', 'category'];
+        const allowed = ['name', 'owner_name', 'email', 'address', 'city', 'state', 'pincode', 'about', 'open_time', 'category', 'id_proof_url', 'shop_proof_url', 'shop_front_photo_url', 'image_url'];
         const filtered: Record<string, any> = {};
         for (const key of allowed) {
             if (updates[key] !== undefined) filtered[key] = updates[key];

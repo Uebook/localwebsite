@@ -18,6 +18,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
     const [formData, setFormData] = useState({
         name: '',
         price: '',
+        onlinePrice: '',
         mrp: '',
         uom: 'Piece',
         categoryId: '',
@@ -41,6 +42,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                 setFormData({
                     name: product.name || '',
                     price: product.price?.toString() || '',
+                    onlinePrice: product.online_price?.toString() || '',
                     mrp: product.mrp?.toString() || '',
                     uom: product.uom || 'Piece',
                     categoryId: product.category_id || '',
@@ -54,6 +56,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                 setFormData({
                     name: '',
                     price: '',
+                    onlinePrice: '',
                     mrp: '',
                     uom: 'Piece',
                     categoryId: '',
@@ -211,7 +214,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Price *</label>
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Local Price *</label>
                                     <input
                                         required
                                         type="number"
@@ -222,6 +225,19 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                                     />
                                 </div>
                                 <div className="space-y-1.5">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Online Price</label>
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={formData.onlinePrice}
+                                        onChange={e => setFormData({ ...formData, onlinePrice: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
                                     <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">MRP</label>
                                     <input
                                         type="number"
@@ -231,9 +247,6 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all"
                                     />
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Unit</label>
                                     <select
@@ -244,18 +257,20 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                                         {units.map(u => <option key={u} value={u}>{u}</option>)}
                                     </select>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Category</label>
-                                    <select
-                                        value={formData.categoryId}
-                                        onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all appearance-none"
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                    </select>
-                                </div>
                             </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider ml-1">Category</label>
+                                <select
+                                    value={formData.categoryId}
+                                    onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-900 outline-none focus:border-primary/30 focus:ring-4 focus:ring-primary/5 transition-all appearance-none"
+                                >
+                                    <option value="">Select Category</option>
+                                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
+                            </div>
+
 
                             {/* Type Toggle */}
                             <div className="flex p-1 bg-slate-100 rounded-2xl">
