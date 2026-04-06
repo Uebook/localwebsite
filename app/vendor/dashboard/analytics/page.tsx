@@ -347,6 +347,8 @@ function TrendingNearlySection({
   trending: TrendingItem[], 
   loading: boolean 
 }) {
+  const router = useRouter();
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
@@ -366,7 +368,7 @@ function TrendingNearlySection({
           {trending.map((item, index) => (
             <button
               key={index}
-              onClick={() => window.open(`/search?q=${encodeURIComponent(item.query)}&city=${encodeURIComponent(city)}`, '_blank')}
+              onClick={() => router.push(`/search?q=${encodeURIComponent(item.query)}&city=${encodeURIComponent(city)}`)}
               className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl hover:border-orange-200 hover:bg-orange-50 transition-all cursor-pointer group"
             >
               <Search size={14} className="text-slate-400 group-hover:text-orange-500" />

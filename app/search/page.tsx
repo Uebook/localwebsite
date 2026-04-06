@@ -261,7 +261,14 @@ function SearchContent() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <button
-                onClick={() => router.back()}
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.history.length > 2) {
+                    router.back();
+                  } else {
+                    const isVendor = typeof window !== 'undefined' && localStorage.getItem('localmarket_vendor');
+                    router.push(isVendor ? '/vendor/dashboard' : '/');
+                  }
+                }}
                 className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors mb-4"
               >
                 <ArrowLeft size={14} /> Back

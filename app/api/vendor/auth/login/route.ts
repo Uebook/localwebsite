@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
             }, { status: 403 });
         }
         
+        if (status === 'Pending') {
+            return NextResponse.json({
+                error: 'Your account is under review. Please wait for admin approval before you can access the dashboard.'
+            }, { status: 403 });
+        }
+        
         // Removed payment and subscription checks per user request to allow direct login.
 
 

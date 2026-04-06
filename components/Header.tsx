@@ -276,8 +276,8 @@ export default function Header({
             </button>
 
             {user && (
-              <button
-                onClick={() => router.push('/cart')}
+              <Link
+                href="/cart"
                 className="relative p-2.5 text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
               >
                 <ShoppingCart size={20} />
@@ -286,7 +286,7 @@ export default function Header({
                     {cartCount}
                   </span>
                 )}
-              </button>
+              </Link>
             )}
 
             {user ? (

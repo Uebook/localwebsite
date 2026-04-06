@@ -240,7 +240,32 @@ export default function VendorDashboardLayout({ children, hideTabs = false }: Ve
         )}
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto relative">
+          {displayVendor.status !== 'Active' && (
+            <div className="absolute inset-0 z-[50] bg-slate-50/80 backdrop-blur-[2px] flex items-center justify-center p-6 min-h-[400px]">
+              <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center border border-slate-100 animate-in fade-in zoom-in duration-300">
+                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Activity size={40} className="text-blue-600 animate-pulse" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 mb-3">Account Under Review</h2>
+                <p className="text-slate-500 text-sm leading-relaxed mb-8">
+                  Your business account is currently being vetted by our administration team. 
+                  Access to dashboard tools will be enabled once your documents are verified.
+                </p>
+                <div className="space-y-3">
+                  <div className="py-3 px-4 bg-slate-50 rounded-xl text-xs font-bold text-slate-400 border border-slate-100">
+                    Typical Review Time: 12-24 Hours
+                  </div>
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {children}
         </div>
 

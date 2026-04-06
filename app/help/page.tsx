@@ -1,15 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
-import { HelpCircle, ChevronDown, ChevronUp, Mail, Phone, MessageSquare, Search } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp, Mail, Phone } from 'lucide-react';
 
 export default function HelpPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [settings, setSettings] = useState({
+    support_phone: '+91 98765 43210',
+    support_email: 'support@lokall.com'
+  });
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/site-settings');
+        const data = await res.json();
+        if (data.success && data.settings) {
+          setSettings(prev => ({ ...prev, ...data.settings }));
+        }
+      } catch (error) {
+        console.error('Error fetching help settings:', error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const faqs = [
     {
@@ -68,18 +87,6 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Search Help */}
-        <div className="mb-6 sm:mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search for help..."
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder:text-gray-400"
-            />
-          </div>
-        </div>
-
         {/* FAQ Section */}
         <div className="bg-white rounded-xl shadow-sm divide-y divide-gray-200 mb-6">
           <div className="p-4 sm:p-6">
@@ -111,19 +118,21 @@ export default function HelpPage() {
         <div className="bg-gradient-to-r from-orange-500 to-blue-500 rounded-xl shadow-lg p-6 sm:p-8 text-white">
           <h3 className="text-xl sm:text-2xl font-bold mb-2">Still need help?</h3>
           <p className="text-white/90 mb-6 text-sm sm:text-base">Contact our support team for assistance</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button className="flex flex-col items-center gap-2 p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a 
+              href={`mailto:${settings.support_email}`}
+              className="flex flex-col items-center gap-2 p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors"
+            >
               <Mail size={24} />
               <span className="font-medium text-sm">Email Support</span>
-            </button>
-            <button className="flex flex-col items-center gap-2 p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
+            </a>
+            <a 
+              href={`tel:${settings.support_phone}`}
+              className="flex flex-col items-center gap-2 p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors"
+            >
               <Phone size={24} />
               <span className="font-medium text-sm">Call Support</span>
-            </button>
-            <button className="flex flex-col items-center gap-2 p-4 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
-              <MessageSquare size={24} />
-              <span className="font-medium text-sm">Live Chat</span>
-            </button>
+            </a>
           </div>
         </div>
       </div>

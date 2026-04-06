@@ -80,37 +80,62 @@ export const useLocation = () => {
 
     const detectLocation = useCallback(async () => {
         if (!navigator.geolocation) {
-            updateLocation({ error: 'Geolocation not supported' });
+            updateLocation({ error: 'Geolocation not supported by your browser' });
             return;
         }
 
+        console.log('useLocation: Starting detection...');
         setLocation(prev => ({ ...prev, loading: true, error: null }));
+
+        // Use a persistent timeout to ensure we don't hang if getCurrentPosition hangs
+        const maxWait = setTimeout(() => {
+            console.warn('useLocation: Geolocation request timed out (client-side)');
+            updateLocation({ loading: false, error: 'Location detection timed out. Please select manually.' });
+        }, 15000); // 15s total safety net
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
+                clearTimeout(maxWait);
                 const { latitude: lat, longitude: lng } = position.coords;
+                console.log('useLocation: GPS Coords obtained:', lat, lng);
+                
                 try {
                     const res = await fetch(`/api/location/detect?lat=${lat}&lng=${lng}`);
                     const data = await res.json();
 
-                    if (!res.ok || data.error) throw new Error(data.error || 'Failed to detect area');
+                    if (!res.ok || data.error) throw new Error(data.error || 'Area detection failed');
 
-                    console.log('useLocation: Optimized Detection Result:', data);
+                    console.log('useLocation: API Detection Result:', data);
 
                     const displayLabel = data.displayLabel || 'Your Area';
                     updateLocation({ lat, lng, city: displayLabel, loading: false, error: null });
-                    console.log('useLocation: Detection complete:', displayLabel);
                 } catch (err: any) {
-                    console.error('useLocation: Geocoding failed', err);
-                    updateLocation({ lat, lng, city: 'Unknown Location', loading: false, error: err.message });
+                    console.error('useLocation: API call failed', err);
+                    updateLocation({ lat, lng, city: 'Unknown Location', loading: false, error: 'Service temporarily slow. Please select manually.' });
                 }
             },
-            (err) => {
-                const msg = err.code === 1 ? 'Location access denied' : 'Could not detect location';
+            async (err) => {
+                clearTimeout(maxWait);
+                console.warn('useLocation: GPS Error', err.code, err.message);
+                
+                // If GPS fails, attempt IP fallback via the API directly
+                try {
+                    console.log('useLocation: Attempting IP-only fallback...');
+                    const res = await fetch('/api/location/detect');
+                    const data = await res.json();
+                    if (data.success && data.city) {
+                        updateLocation({ city: data.displayLabel, loading: false, error: null });
+                        return;
+                    }
+                } catch (e) { /* ignore */ }
+
+                const msg = err.code === 1 
+                    ? 'Location access denied. Please enable GPS or select manually.' 
+                    : 'Could not detect GPS location. Please select manually.';
+                
                 updateLocation({ loading: false, error: msg });
-                console.warn('useLocation: Geolocation failed', msg);
             },
-            { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
         );
     }, [updateLocation]);
 

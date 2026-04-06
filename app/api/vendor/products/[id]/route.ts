@@ -11,7 +11,7 @@ export async function PATCH(
         }
 
         const body = await request.json();
-        const { name, price, mrp, uom, categoryId, imageUrl, inStock } = body;
+        const { name, price, mrp, uom, categoryId, imageUrl, inStock, type, isBestSeller } = body;
 
         const SUPABASE_URL = process.env.SUPABASE_URL;
         const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -28,6 +28,8 @@ export async function PATCH(
             category_id: categoryId || null,
             image_url: imageUrl || null,
             is_active: inStock !== undefined ? inStock : true,
+            is_best_seller: isBestSeller !== undefined ? isBestSeller : undefined,
+            type: type || undefined,
             updated_at: new Date().toISOString(),
         };
 

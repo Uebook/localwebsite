@@ -245,12 +245,9 @@ export default function VendorRegisterPage() {
         setIsLoading(false);
         return;
       }
-      // First month is FREE — activate vendor session immediately
-      const activatedVendor = { ...data.vendor, status: 'Active' };
-      localStorage.setItem('localmarket_vendor', JSON.stringify(activatedVendor));
-      window.dispatchEvent(new Event('authchange'));
+      // Registration successful - status is 'Pending'
       setVendorId(data.vendor.id);
-      setStep(5); // Move to Free Success Step
+      setStep(5); // Move to Success Step (Under Review)
       setIsLoading(false);
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.');
@@ -955,34 +952,35 @@ export default function VendorRegisterPage() {
                     {/* Heading */}
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Registration Successful!</h2>
-                        <p className="text-gray-500 mt-2 text-sm">Welcome to Local Market. Your shop is now live!</p>
+                        <p className="text-gray-500 mt-2 text-sm">Thank you for joining Local Market. Your account is now under review.</p>
                     </div>
 
-                    {/* FREE Banner */}
-                    <div className="mx-auto max-w-sm bg-gradient-to-r from-orange-500 to-amber-400 rounded-2xl p-5 shadow-lg shadow-orange-200 text-white">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                            <span className="text-2xl">🎁</span>
-                            <span className="text-xs font-black uppercase tracking-widest opacity-90">Special Offer</span>
+                    {/* Review Banner */}
+                    <div className="mx-auto max-w-sm bg-gradient-to-r from-blue-600 to-indigo-500 rounded-2xl p-5 shadow-lg shadow-blue-100 text-white text-left">
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">⏳</span>
+                            <span className="text-xs font-black uppercase tracking-widest opacity-90">Account Under Review</span>
                         </div>
-                        <p className="text-3xl font-black mb-1">First Month FREE!</p>
-                        <p className="text-sm font-semibold opacity-90">No payment required — your shop is active for 30 days on us.</p>
-                        <div className="mt-3 bg-white/20 rounded-xl px-4 py-2 text-xs font-bold">
-                            ✅ &nbsp;Your shop is now live and visible to customers
+                        <p className="text-sm font-semibold opacity-90 leading-relaxed">
+                            Our team is currently reviewing your business documents and shop photos. This process typically takes 12-24 hours.
+                        </p>
+                        <div className="mt-4 bg-white/20 rounded-xl px-4 py-2 text-[11px] font-bold">
+                            🔔 &nbsp;We will notify you via email/SMS once your account is activated.
                         </div>
                     </div>
 
                     {/* Info Note */}
                     <p className="text-xs text-gray-400 max-w-xs mx-auto">
-                        After your free month, you can choose a plan to continue. We'll notify you before the trial ends.
+                        Once approved, you will be able to access your dashboard and start listing products.
                     </p>
 
-                    {/* Go to Dashboard Button */}
+                    {/* Go Login Button */}
                     <button
-                        onClick={() => router.push('/vendor/dashboard/analytics')}
-                        className="w-full py-4 text-white rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-orange-200 active:scale-95"
+                        onClick={() => router.push('/login')}
+                        className="w-full py-4 text-white rounded-xl font-bold text-lg hover:opacity-90 transition-all shadow-lg shadow-blue-200 active:scale-95"
                         style={{ background: 'var(--primary)' }}
                     >
-                        Go to My Dashboard →
+                        Proceed to Login →
                     </button>
                 </div>
             )}

@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import AIChatWidget from "@/components/AIChatWidget";
 import Footer from "@/components/Footer";
+import CookieConsent from "@/components/CookieConsent";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           {children}
           <Footer />
           <AIChatWidget />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

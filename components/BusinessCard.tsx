@@ -58,6 +58,7 @@ export default function BusinessCard({ business, onClick, variant = 'default' }:
   const imgUrl = business.imageUrl ||
     (business as any).profile_image_url ||
     (business as any).image_url ||
+    (business as any).image ||
     (business as any).shop_front_photo_url ||
     'https://images.unsplash.com/photo-1574310391921-4b130467b2bb?auto=format&fit=crop&w=800&q=80';
 

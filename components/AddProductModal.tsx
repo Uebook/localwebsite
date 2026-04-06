@@ -47,9 +47,9 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
                     uom: product.uom || 'Piece',
                     categoryId: product.category_id || '',
                     imageUrl: product.image_url || '',
-                    type: product.type || 'Product',
-                    inStock: product.is_active ?? true,
-                    isBestSeller: product.is_best_seller ?? false,
+                    type: product.type || product.product_type || 'Product',
+                    inStock: product.is_active ?? product.inStock ?? true,
+                    isBestSeller: product.is_best_seller ?? product.isBestSeller ?? false,
                     description: product.description || ''
                 });
             } else {
@@ -140,7 +140,7 @@ export default function AddProductModal({ isOpen, onClose, onSuccess, vendorId, 
             <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                    <h2 className="text-xl font-black text-slate-900">Add New Item</h2>
+                    <h2 className="text-xl font-black text-slate-900">{product ? 'Edit Item' : 'Add New Item'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                         <X size={20} className="text-slate-500" />
                     </button>
